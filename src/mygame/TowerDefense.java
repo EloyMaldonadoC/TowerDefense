@@ -27,7 +27,7 @@ import com.jme3.scene.shape.Sphere;
 
 /**
  *
- * @author Eloy
+ * @author Eloy, Diana, Paulina
  */
 public class TowerDefense extends SimpleApplication {
     /*

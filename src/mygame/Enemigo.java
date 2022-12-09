@@ -30,9 +30,9 @@ public class Enemigo extends TowerDefense{
     }
     
     public void generarGeometria(){
-        Sphere cuerpo = new Sphere(30 ,30 ,0.4f);
+        Sphere cuerpo = new Sphere(30 ,30 ,0.2f);
         geo = new Geometry(nombre, cuerpo);
-        geo.move(0, 0.5f, 0);
+        geo.move(0, 0.2f, 0);
     }
     
     //Getters

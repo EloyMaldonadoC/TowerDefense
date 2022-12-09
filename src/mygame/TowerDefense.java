@@ -7,6 +7,7 @@ package mygame;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.collision.CollisionResults;
+import com.jme3.input.ChaseCamera;
 import com.jme3.input.MouseInput;
 import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.MouseButtonTrigger;
@@ -30,36 +31,51 @@ import com.jme3.scene.shape.Sphere;
  */
 public class TowerDefense extends SimpleApplication {
 
+    static TowerDefense app;
     float vel = 0.1f;
-
+    float cont = 0.1f;
+    int vista = 0;
+    //Node w = new Node("?");
     Node suelo = new Node("Suelo");
     Node cielo = new Node("Cielo");
     Node figuras = new Node("Figuras");
     Node nodeEnemigo = new Node("NodeEnemigo");
     Spatial moverEnemigo;
-    Enemigo enemigo[] = new Enemigo[10];
+    Enemigo enemigo;
+    Vector3f meta = new Vector3f(7.2f, 0.3f, -1.5f);
+    Vector3f derecha = new Vector3f(-1.2f, 0.3f, 1.5f);
+    Vector3f izquierda = new Vector3f(-1.2f, 0.3f, -1.5f);
 
     private final static Trigger TRIGGER_SHOOT = new MouseButtonTrigger(MouseInput.BUTTON_LEFT);
     private final static String DESTROY_ACTION = "Destroy";
 
     public static void main(String[] args) {
-        TowerDefense app = new TowerDefense();
+        app = new TowerDefense();
         app.start();
     }
 
     @Override
     public void simpleInitApp() {
+        /*
+        Box b = new Box(0.1f, 0.1f, 0.1f);
+        Geometry geob = new Geometry("prueba", b);
+        Material m = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        m.setColor("Color", ColorRGBA.Blue);
+        geob.setMaterial(m);
+        geob.move(-1.2f, 0.3f, 1.5f);
+        rootNode.attachChild(w);
+        w.attachChild(geob);*/
 
         inputManager.addMapping(DESTROY_ACTION, TRIGGER_SHOOT);
         inputManager.addListener(analogListener, new String[]{DESTROY_ACTION});
 
         rootNode.attachChild(nodeEnemigo);
         HUD();
-        flyCam.setMoveSpeed(30f);
+        camara();
         cielo();
         terreno();
         assets();
-        generarEnemigos();
+        generarEnemigo("malo", 0.6f);
     }
 
     public void cielo() {
@@ -77,19 +93,19 @@ public class TowerDefense extends SimpleApplication {
         geoCielo02.setMaterial(matCielo02);
 
         Box cielo03 = new Box(0, 30, 30);
-        Geometry geoCielo03 = new Geometry("Cielo03", cielo03);
+        Geometry geoCielo03 = new Geometry("Cielo01", cielo03);
         Material matCielo03 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         matCielo03.setTexture("ColorMap", assetManager.loadTexture("Textures/cielo.jpg"));
         geoCielo03.setMaterial(matCielo03);
 
         Box cielo04 = new Box(30, 30, 0);
-        Geometry geoCielo04 = new Geometry("Cielo03", cielo04);
+        Geometry geoCielo04 = new Geometry("Cielo01", cielo04);
         Material matCielo04 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         matCielo04.setTexture("ColorMap", assetManager.loadTexture("Textures/cielo.jpg"));
         geoCielo04.setMaterial(matCielo04);
 
         Box cielo05 = new Box(30, 30, 0);
-        Geometry geoCielo05 = new Geometry("Cielo03", cielo05);
+        Geometry geoCielo05 = new Geometry("Cielo01", cielo05);
         Material matCielo05 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         matCielo05.setTexture("ColorMap", assetManager.loadTexture("Textures/cielo.jpg"));
         geoCielo05.setMaterial(matCielo05);
@@ -386,7 +402,7 @@ public class TowerDefense extends SimpleApplication {
         arbol01.attachChild(geoHojaMedia01);
         arbol01.attachChild(geoHojaAlta01);
 
-        arbol01.move(7, 0, 2);
+        arbol01.move(6, 0, 2);
 
         Node arbol02 = new Node("Arbol02");
 
@@ -517,50 +533,59 @@ public class TowerDefense extends SimpleApplication {
         guiNode.attachChild(geoPuntero);
     }
 
-    public void generarEnemigos() {
-        String nombre;
-        float velocidad = 0.6f;
-
-        for (int i = 0; i <=9; i++) {
-            nombre = "Enemigo" + i;
-            generarEnemigo(nombre, velocidad, i);
-            nodeEnemigo.attachChild(enemigo[i].getGeometria());
-            velocidad = velocidad + vel;
-        }
-    }
-
-    public void generarEnemigo(String nombre, float velocidad, int numero) {
-        System.out.println(nombre);
-        enemigo[numero] = new Enemigo(nombre, velocidad);
+    public Enemigo generarEnemigo(String nombre, float velocidad) {
+        enemigo = new Enemigo(nombre, velocidad);
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         mat.setColor("Color", ColorRGBA.randomColor());
-        enemigo[numero].getGeometria().setMaterial(mat);
+        enemigo.getGeometria().setMaterial(mat);
+        nodeEnemigo.attachChild(enemigo.getGeometria());
+        return enemigo;
     }
 
-    public void movimiento(float tpf) {
-        for (int i = 0; i <=9; i++) {
-            if (enemigo[i].velocidad != 0) {
-                moverEnemigo = rootNode.getChild(enemigo[i].getNombre());
-                moverEnemigo.move(tpf * enemigo[i].getVelocidad(), 0, 0);
+    public void gameOver() {
+        CollisionResults result = new CollisionResults();
+        Ray rayMeta = new Ray(meta, Vector3f.UNIT_Z);
+        rootNode.collideWith(rayMeta, result);
+        if (result.size() > 0) {
+            Geometry targetMeta = result.getClosestCollision().getGeometry();
+            if (targetMeta.getName().equals("malo")) {
+                app.stop();
+            }
+        }
+    }
+    public void rebotar(){
+        CollisionResults resultadoDerecha = new CollisionResults();
+        Ray rayDerecha = new Ray(derecha, Vector3f.UNIT_X);
+        rootNode.collideWith(rayDerecha, resultadoDerecha);
+        if(resultadoDerecha.size()>0){
+            Geometry targetDerecha = resultadoDerecha.getClosestCollision().getGeometry();
+            if(targetDerecha.getName().equals("malo")){
+               if(vista == 0){
+                   vista = 1;
+               }
+            }
+        }
+        
+        CollisionResults resultadoIzquierda = new CollisionResults();
+        Ray rayIzquierda = new Ray(izquierda, Vector3f.UNIT_X);
+        rootNode.collideWith(rayIzquierda, resultadoIzquierda);
+        
+        if(resultadoIzquierda.size()>0){
+            Geometry targetIzquierda = resultadoIzquierda.getClosestCollision().getGeometry();
+            if(targetIzquierda.getName().equals("malo")){
+               if(vista == 1){
+                   vista = 0;
+               }
             }
         }
     }
 
     @Override
     public void simpleUpdate(float tpf) {
-        movimiento(tpf);
-        int cont = 0;
-                            int j = 0;
-                            while(j == 9){
-                                if(enemigo[j].getVelocidad() == 0){
-                                    cont++;
-                                }
-                                j++;
-                            }
-                            if(cont == 9){
-                                generarEnemigos();
-                                vel++;
-                            }
+               rebotar();
+               mover(tpf);
+        
+        gameOver();
     }
 
     @Override
@@ -579,26 +604,30 @@ public class TowerDefense extends SimpleApplication {
 
                 if (result.size() > 0) {
                     Geometry target = result.getClosestCollision().getGeometry();
-                    for (int i = 0; i <=9; i++) {
-                        if (target.getName() == enemigo[0].getNombre()
-                                || target.getName() == enemigo[1].getNombre()
-                                || target.getName() == enemigo[2].getNombre()
-                                || target.getName() == enemigo[3].getNombre()
-                                || target.getName() == enemigo[4].getNombre()
-                                || target.getName() == enemigo[5].getNombre()
-                                || target.getName() == enemigo[6].getNombre()
-                                || target.getName() == enemigo[7].getNombre()
-                                || target.getName() == enemigo[8].getNombre()
-                                || target.getName() == enemigo[9].getNombre()) {
-                            target.removeFromParent();
-                            if (target.getName() == enemigo[i].getNombre()) {
-                                enemigo[i].setVelocidad(0);
-                            }
-                            
-                        }
+                    if (target.getName().equals("malo")) {
+                        target.removeFromParent();
+                        generarEnemigo("malo", 0.6f + vel);
+                        vel = vel + 0.1f;
                     }
                 }
             }
         }
     };
+    
+    private void mover(float tpf){
+        if(vista == 0){    
+            Spatial mover = nodeEnemigo.getChild("malo");
+            mover.move(tpf*enemigo.getVelocidad(), 0, tpf*enemigo.getVelocidad());    
+        }
+        else{
+            Spatial mover = nodeEnemigo.getChild("malo");
+            mover.move(tpf*enemigo.getVelocidad(), 0, -tpf*enemigo.getVelocidad());  
+        }
+    }
+    private void camara(){
+        flyCam.setMoveSpeed(0);
+        flyCam.setRotationSpeed(1f);
+        cam.setLocation(new Vector3f(7, 4, 0));
+    }
+
 }

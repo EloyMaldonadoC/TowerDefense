@@ -59,7 +59,6 @@ public class TowerDefense extends SimpleApplication {
         app = new TowerDefense();
         app.start();
     }
-
     /*
     Clase simpleinitApp donde se inicializa todas las cosas en el juego
     */
@@ -76,7 +75,6 @@ public class TowerDefense extends SimpleApplication {
         assets();//Crea las figuras del  terreno
         generarEnemigo("malo", 0.6f);//genera el enemigo
     }
-
     /*
     Crea el cielo a partir de varios paneles de 30x30 qen diferentes angulos que crean una caja que cubre
     todo el terreno de juego, los paneles son colocados en su respectivo lugar y sus geometrias son vinculadas

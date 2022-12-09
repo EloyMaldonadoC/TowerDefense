@@ -30,54 +30,58 @@ import com.jme3.scene.shape.Sphere;
  * @author Eloy
  */
 public class TowerDefense extends SimpleApplication {
+    /*
+    Declaracion de variables globales
+    */
+    static TowerDefense app; //se crea la aplicación
+    float vel = 0.1f; //constante de velocidade del enemigo
+    int vista = 0; //Define el lado hacia donde esta yendo el enemigo
+    Node suelo = new Node("Suelo"); //Nodo del suelo
+    Node cielo = new Node("Cielo"); //Nodo del cielo
+    Node figuras = new Node("Figuras"); //Nodo de las geometrias del terreno
+    Node nodeEnemigo = new Node("NodeEnemigo"); //Nodo de los enemigos 
+    Spatial moverEnemigo; //Spatial del movimiento enemigo
+    Enemigo enemigo; //objetod de tipo enemigo
+    Vector3f meta = new Vector3f(7.2f, 0.3f, -1.5f); //Vector de la meta
+    Vector3f derecha = new Vector3f(-1.2f, 0.3f, 1.5f); //Vector de rebote Derecho
+    Vector3f izquierda = new Vector3f(-1.2f, 0.3f, -1.5f); //Vector de rebote Izquierdo
 
-    static TowerDefense app;
-    float vel = 0.1f;
-    float cont = 0.1f;
-    int vista = 0;
-    //Node w = new Node("?");
-    Node suelo = new Node("Suelo");
-    Node cielo = new Node("Cielo");
-    Node figuras = new Node("Figuras");
-    Node nodeEnemigo = new Node("NodeEnemigo");
-    Spatial moverEnemigo;
-    Enemigo enemigo;
-    Vector3f meta = new Vector3f(7.2f, 0.3f, -1.5f);
-    Vector3f derecha = new Vector3f(-1.2f, 0.3f, 1.5f);
-    Vector3f izquierda = new Vector3f(-1.2f, 0.3f, -1.5f);
-
+    /*
+    Se define el disparador para las acciones de destrucción del enemigo
+    */
     private final static Trigger TRIGGER_SHOOT = new MouseButtonTrigger(MouseInput.BUTTON_LEFT);
     private final static String DESTROY_ACTION = "Destroy";
 
+    /*
+    Clase static donde se ejecuta la aplicación
+    */
     public static void main(String[] args) {
         app = new TowerDefense();
         app.start();
     }
 
+    /*
+    Clase simpleinitApp donde se inicializa todas las cosas en el juego
+    */
     @Override
     public void simpleInitApp() {
-        /*
-        Box b = new Box(0.1f, 0.1f, 0.1f);
-        Geometry geob = new Geometry("prueba", b);
-        Material m = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        m.setColor("Color", ColorRGBA.Blue);
-        geob.setMaterial(m);
-        geob.move(-1.2f, 0.3f, 1.5f);
-        rootNode.attachChild(w);
-        w.attachChild(geob);*/
+        inputManager.addMapping(DESTROY_ACTION, TRIGGER_SHOOT);//Se añade el mapping al inputManager
+        inputManager.addListener(analogListener, new String[]{DESTROY_ACTION});//Se añade el listener al inputManager
 
-        inputManager.addMapping(DESTROY_ACTION, TRIGGER_SHOOT);
-        inputManager.addListener(analogListener, new String[]{DESTROY_ACTION});
-
-        rootNode.attachChild(nodeEnemigo);
-        HUD();
-        camara();
-        cielo();
-        terreno();
-        assets();
-        generarEnemigo("malo", 0.6f);
+        rootNode.attachChild(nodeEnemigo);//Se vincula el nodo enemigo con el nodo raíz
+        HUD();//Ejecuta el HUD
+        camara();//Ejecuta la vista de camara
+        cielo();//Crea el cielo
+        terreno();//crea el terreno
+        assets();//Crea las figuras del  terreno
+        generarEnemigo("malo", 0.6f);//genera el enemigo
     }
 
+    /*
+    Crea el cielo a partir de varios paneles de 30x30 qen diferentes angulos que crean una caja que cubre
+    todo el terreno de juego, los paneles son colocados en su respectivo lugar y sus geometrias son vinculadas
+    con el nodo cielo y este al nodo raíz.
+    */
     public void cielo() {
 
         Box cielo01 = new Box(30, 0, 30);
@@ -123,7 +127,10 @@ public class TowerDefense extends SimpleApplication {
         cielo.attachChild(geoCielo04);
         cielo.attachChild(geoCielo05);
     }
-
+    /*
+    Crea el terreno con paneles de 1x1 (un total se 25 paneles) colocados unos al lado de otros y todos
+    vinculados con el nodo suelo que a su vez este esta vinculado al nodo raíz
+    */
     public void terreno() {
 
         Box suelo01 = new Box(1, 0, 1);
@@ -328,9 +335,16 @@ public class TowerDefense extends SimpleApplication {
         suelo.attachChild(geoSuelo24);
         suelo.attachChild(geoSuelo25);
     }
-
+    /*
+    Crea la torre y los arboles que se colocaran sobre el terreno, estos son vinculados cada uno a un respectivo nodo
+    para su geometria que a su vez esta vinculada al nodo figura y este al nodo raíz. Luego son posicionados a un lugar
+    en el terreno.
+    */
     private void assets() {
 
+        /*
+        Creacion de la torre
+        */
         Node torre = new Node("Torre");
 
         Box superior = new Box(0.9f, 0.9f, 0.5f);
@@ -364,7 +378,10 @@ public class TowerDefense extends SimpleApplication {
 
         rootNode.attachChild(figuras);
         figuras.attachChild(torre);
-
+        
+        /*
+        Creacion de el arbol01
+        */
         Node arbol01 = new Node("Arbol01");
 
         Box tronco01 = new Box(0.1f, 0.1f, 0.1f);
@@ -404,6 +421,9 @@ public class TowerDefense extends SimpleApplication {
 
         arbol01.move(6, 0, 2);
 
+        /*
+        Creacion de el arbol02
+        */
         Node arbol02 = new Node("Arbol02");
 
         Box tronco02 = new Box(0.1f, 0.1f, 0.1f);
@@ -443,6 +463,9 @@ public class TowerDefense extends SimpleApplication {
 
         arbol02.move(6, 0, -2);
 
+        /*
+        Creacion de el arbol03
+        */
         Node arbol03 = new Node("Arbol03");
 
         Box tronco03 = new Box(0.1f, 0.1f, 0.1f);
@@ -482,6 +505,9 @@ public class TowerDefense extends SimpleApplication {
 
         arbol03.move(3, 0, -2.5f);
 
+        /*
+        Creacion de el arbol04
+        */
         Node arbol04 = new Node("Arbol04");
 
         Box tronco04 = new Box(0.1f, 0.1f, 0.1f);
@@ -521,7 +547,10 @@ public class TowerDefense extends SimpleApplication {
 
         arbol04.move(1, 0, -2);
     }
-
+    /*
+    Crea la interfaz del usurio colocando un puntero en el centro de la pantalla el cual nos ayudara para poderlo usar
+    como punto de referencia para la destrucción de los enemigos.
+    */
     private void HUD() {
         Box puntero = new Box(1, 1, 1);
         Geometry geoPuntero = new Geometry("puntero", puntero);
@@ -532,7 +561,9 @@ public class TowerDefense extends SimpleApplication {
         geoPuntero.scale(4);
         guiNode.attachChild(geoPuntero);
     }
-
+    /*
+    Función que genera un enemigo y lo retorna
+    */
     public Enemigo generarEnemigo(String nombre, float velocidad) {
         enemigo = new Enemigo(nombre, velocidad);
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
@@ -541,24 +572,33 @@ public class TowerDefense extends SimpleApplication {
         nodeEnemigo.attachChild(enemigo.getGeometria());
         return enemigo;
     }
-
+    /*
+    Finaliza el juego si el enemigo toca la meta
+    */
     public void gameOver() {
         CollisionResults result = new CollisionResults();
-        Ray rayMeta = new Ray(meta, Vector3f.UNIT_Z);
+        Ray rayMeta = new Ray(meta, Vector3f.UNIT_Z);//creacion del ray de la meta
         rootNode.collideWith(rayMeta, result);
+        //Compara si se esta chocando con algo
         if (result.size() > 0) {
             Geometry targetMeta = result.getClosestCollision().getGeometry();
+            //Si se choca con una geometria enemiga detiene el juego
             if (targetMeta.getName().equals("malo")) {
                 app.stop();
             }
         }
     }
+    /*
+    Cambia la direccion a la que se mueve el enemigo
+    */
     public void rebotar(){
         CollisionResults resultadoDerecha = new CollisionResults();
-        Ray rayDerecha = new Ray(derecha, Vector3f.UNIT_X);
+        Ray rayDerecha = new Ray(derecha, Vector3f.UNIT_X);//ray derecho del camino de los enemigos
         rootNode.collideWith(rayDerecha, resultadoDerecha);
+        //Compara si se esta chocando con algo
         if(resultadoDerecha.size()>0){
             Geometry targetDerecha = resultadoDerecha.getClosestCollision().getGeometry();
+            //Si el enemigo coliciona cambia su direccion de vista 
             if(targetDerecha.getName().equals("malo")){
                if(vista == 0){
                    vista = 1;
@@ -567,11 +607,12 @@ public class TowerDefense extends SimpleApplication {
         }
         
         CollisionResults resultadoIzquierda = new CollisionResults();
-        Ray rayIzquierda = new Ray(izquierda, Vector3f.UNIT_X);
+        Ray rayIzquierda = new Ray(izquierda, Vector3f.UNIT_X);//ray izquierdo del camino de los enemigos
         rootNode.collideWith(rayIzquierda, resultadoIzquierda);
-        
+        //Compara si se esta chocando con algo
         if(resultadoIzquierda.size()>0){
             Geometry targetIzquierda = resultadoIzquierda.getClosestCollision().getGeometry();
+            //Si el enemigo coliciona cambia su direccion de vista 
             if(targetIzquierda.getName().equals("malo")){
                if(vista == 1){
                    vista = 0;
@@ -579,31 +620,34 @@ public class TowerDefense extends SimpleApplication {
             }
         }
     }
-
+    /*
+    Función simpleUpdate, que ejecuta todo lo que este dentro cada fotograma por segundo
+    */
     @Override
     public void simpleUpdate(float tpf) {
-               rebotar();
-               mover(tpf);
-        
-        gameOver();
+        rebotar();//ejecuta las comparaciones del camino para cambiar su dirección
+        mover(tpf);//Mueve a los enemigos
+        gameOver();//Si el enemigo llega a la meta ejecutalo
     }
-
     @Override
     public void simpleRender(RenderManager rm) {
         //TODO: add render code
     }
-
+    /*
+    AnalogListener que se dispara si se hace clic sobre un enemigo
+    */
     private final AnalogListener analogListener = new AnalogListener() {
         @Override
         public void onAnalog(String name, float identy, float tpf) {
             if (name.equals(DESTROY_ACTION)) {
 
                 CollisionResults result = new CollisionResults();
-                Ray ray = new Ray(cam.getLocation(), cam.getDirection());
+                Ray ray = new Ray(cam.getLocation(), cam.getDirection());//Ray que apunta hacia la direccion del puntero de el HUD
                 rootNode.collideWith(ray, result);
-
+                //Compara si se esta chocando con algo
                 if (result.size() > 0) {
                     Geometry target = result.getClosestCollision().getGeometry();
+                    //Si coliciona con un enemigo destruyelo, crea uno nuevo e incrementa la velocidad del enemigo
                     if (target.getName().equals("malo")) {
                         target.removeFromParent();
                         generarEnemigo("malo", 0.6f + vel);
@@ -613,7 +657,9 @@ public class TowerDefense extends SimpleApplication {
             }
         }
     };
-    
+    /*
+    mueve la posicion del enemigo de derecha a izquierda dependiendo de el resultado de la vista
+    */
     private void mover(float tpf){
         if(vista == 0){    
             Spatial mover = nodeEnemigo.getChild("malo");
@@ -624,6 +670,9 @@ public class TowerDefense extends SimpleApplication {
             mover.move(tpf*enemigo.getVelocidad(), 0, -tpf*enemigo.getVelocidad());  
         }
     }
+    /*
+    Coloca la camara en pusición dada por un vector, bloquea el movimiento del usuario pero deja la vista libre
+    */
     private void camara(){
         flyCam.setMoveSpeed(0);
         flyCam.setRotationSpeed(1f);

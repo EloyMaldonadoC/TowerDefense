@@ -14,21 +14,34 @@ import com.jme3.scene.shape.Sphere;
  *
  * @author Eloy
  */
+/*
+Clase que genera un objeto enemigo recibiendo sus atributos como variable
+*/
 public class Enemigo extends TowerDefense{
     
+    /*
+    Definición de variables globales
+    */
     String nombre;
     float velocidad;
     Geometry geo;
-    
+    /*
+    Constructor de la clase que recibe los parametros
+    */
     public Enemigo(String nombre, float velocidad){
         this.nombre = nombre;
         this.velocidad = velocidad;
         generarGeometria();
     }
+    /*
+    Constructor vacio de la clase
+    */
     public Enemigo(){
         
     }
-    
+    /*
+    Genera la geometria del enemigo
+    */
     public void generarGeometria(){
         Sphere cuerpo = new Sphere(30 ,30 ,0.2f);
         geo = new Geometry(nombre, cuerpo);
@@ -39,9 +52,6 @@ public class Enemigo extends TowerDefense{
     public String getNombre(){
         return nombre;
     }
-    /*public String getColor(){
-        return color;
-    }*/
     public float getVelocidad(){
         return velocidad;
     }
@@ -52,9 +62,6 @@ public class Enemigo extends TowerDefense{
     public void setNombre(String nombre){
         this.nombre = nombre;
     }
-    /*public void setColor(String color){
-        this.color = color;
-    }*/
     public void setVelocidad(float velocidad){
         this.velocidad = velocidad;
     }
